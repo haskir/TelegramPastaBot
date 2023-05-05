@@ -24,18 +24,25 @@ goal_time = datetime.datetime.strptime('09:00', '%H:%M')
 
 
 async def send_mailing():
+    global mailing_enabled
     if not mailing_enabled:
         return
     if datetime.datetime.now().hour == goal_time.hour and datetime.datetime.now().minute == goal_time.minute:
+        mailing_enabled = False
         update_list()
         for user in subscribed_users:
-            await bot.send_message(int(user), get_pasta(), reply_markup=unsubscribe_keyboard.as_markup())
+            await bot.send_message(int(user),
+                                   text=f"`{get_pasta()}`",
+                                   parse_mode="Markdown",
+                                   reply_markup=unsubscribe_keyboard.as_markup())
         print(f"{datetime.datetime.now()}\n"
-              f"Отправил рассылку {len(subscribed_users)}пользователям, теперь жду 24 часа")
-        await asleep(60 * 60 * 24 - 1)
-    else:
-        await asleep((goal_time - datetime.datetime.now()).seconds + 1)
+              f"Отправил рассылку {len(subscribed_users)} пользователям, теперь жду 24 часа")
+        await asleep(60)
+        mailing_enabled = True
         await send_mailing()
+    else:
+        print("Запустил ожидание")
+        await asleep((goal_time - datetime.datetime.now()).seconds + 1)
 
 
 @dp.message(Command(commands=['start_mailing']))
@@ -96,12 +103,13 @@ async def Unbscribe(callback: CallbackQuery):
 @dp.callback_query(lambda callback: "More" in callback.data)
 async def More(callback: CallbackQuery):
     keyboard = subscribe_keyboard if str(callback.from_user.id) not in subscribed_users else unsubscribe_keyboard
-    await callback.message.answer(text=get_pasta(),
+    await callback.message.answer(text=f"`{get_pasta()}`",
+                                  parse_mode="Markdown",
                                   reply_markup=keyboard.as_markup())
 
 
 async def main():
-    await dp.start_polling(bot)
+    await dp.start_polling(bot, skip_updates=True)
 
 
 # Запускаем бота
