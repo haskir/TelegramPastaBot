@@ -1,10 +1,11 @@
-import asyncio, dotenv, datetime, os
+import asyncio, dotenv, os, time
 from asyncio import sleep as asleep
+import datetime
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
-from Functions import get_pasta, add_user, remove_user, read_users, update_list
+from Functions import get_pasta, add_user_to_file, remove_user, read_users, update_list
 from Keyboards import *
 
 dotenv.load_dotenv()
@@ -19,6 +20,22 @@ dp: Dispatcher = Dispatcher(bot=bot, storage=storage)
 subscribed_users = set()
 [subscribed_users.add(user) for user in read_users()]
 mailing_enabled = False
+goal_time = datetime.datetime.strptime('09:00', '%H:%M')
+
+
+async def send_mailing():
+    if not mailing_enabled:
+        return
+    if datetime.datetime.now().hour == goal_time.hour and datetime.datetime.now().minute == goal_time.minute:
+        update_list()
+        for user in subscribed_users:
+            await bot.send_message(int(user), get_pasta(), reply_markup=unsubscribe_keyboard.as_markup())
+        print(f"{datetime.datetime.now()}\n"
+              f"Отправил рассылку {len(subscribed_users)}пользователям, теперь жду 24 часа")
+        await asleep(60 * 60 * 24 - 1)
+    else:
+        await asleep((goal_time - datetime.datetime.now()).seconds + 1)
+        await send_mailing()
 
 
 @dp.message(Command(commands=['start_mailing']))
@@ -28,22 +45,11 @@ async def start_mailing(message: Message):
         return
     global mailing_enabled
     if mailing_enabled:
-        await message.answer(text="Рассылка уже было включена ранее")
+        await message.answer(text="Рассылка уже была включена ранее")
         return
     mailing_enabled = True
-    await message.answer(text="Включил рассылку")
-    if datetime.datetime.now().hour == 9:
-        update_list()
-        for user in subscribed_users:
-            await bot.send_message(int(user), get_pasta(), reply_markup=unsubscribe_keyboard.as_markup())
-            await asleep(3600 * 24)
-    else:
-        if datetime.datetime.now().minute == 0:
-            await asleep(3600)
-            await start_mailing(message)
-        else:
-            await asleep((60 - datetime.datetime.now().minute) * 60)
-            await start_mailing(message)
+    await message.answer(text=f"Включил рассылку на {goal_time.time()}")
+    await send_mailing()
 
 
 @dp.message(Command(commands=['stop_mailing']))
@@ -67,19 +73,23 @@ async def Any(message: Message):
 
 @dp.callback_query(lambda callback: "Subscribe" in callback.data)
 async def Subscribe(callback: CallbackQuery):
+    user = str(callback.from_user.id)
+    if user in subscribed_users:
+        return
     await callback.message.answer(text="Буду слать пасту каждый день в 9:00",
                                   reply_markup=unsubscribe_keyboard.as_markup())
-    user = str(callback.from_user.id)
     subscribed_users.add(user)
-    add_user(user)
+    add_user_to_file(user)
 
 
 @dp.callback_query(lambda callback: "Unsubscribe" in callback.data)
 async def Unbscribe(callback: CallbackQuery):
+    user = str(callback.from_user.id)
+    if user not in subscribed_users:
+        return
+    subscribed_users.remove(user)
     await callback.message.answer(text="Больше не буду слать пасту каждый день",
                                   reply_markup=subscribe_keyboard.as_markup())
-    user = str(callback.from_user.id)
-    subscribed_users.remove(user)
     remove_user(user)
 
 

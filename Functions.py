@@ -41,7 +41,7 @@ def get_pasta() -> str | bool:
         return result.get_text().strip()
 
 
-def add_user(user: str | int):
+def add_user_to_file(user: str | int):
     path = r"./users.txt"
     if not os.path.exists(path):
         with open(path, "w") as file:
@@ -51,7 +51,7 @@ def add_user(user: str | int):
             print("User already in Database")
             return
         with open(path, "a") as file:
-            file.write(f"{user};")
+            file.write(f"{user.rstrip()};")
 
 
 def read_users() -> list[str] | None:
@@ -59,7 +59,7 @@ def read_users() -> list[str] | None:
     if not os.path.exists(path):
         return None
     with open(path, "r") as file:
-        return [user for user in file.readline().split(";") if user]
+        return [user for user in file.readline().split(";") if user and user.isdigit()]
 
 
 def remove_user(user: str | int):
@@ -68,4 +68,4 @@ def remove_user(user: str | int):
     if str(user) in users:
         users.remove(str(user))
         with open(path, "w") as file:
-            [file.write(user + ";") for user in users]
+            [file.write(user.rstrip() + ";") for user in users]
