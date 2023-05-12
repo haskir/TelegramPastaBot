@@ -1,3 +1,4 @@
+import datetime
 import os.path
 import random
 
@@ -11,6 +12,7 @@ def update_list() -> bool:
     if req.status_code == 200:
         with open(r"./pastas.txt", "w") as file:
             file.write(req.text)
+            print(f"Обновил список паст {datetime.datetime.now()}")
             return True
     print("Didn't get list of pastas")
     return False

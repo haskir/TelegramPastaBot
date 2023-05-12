@@ -7,6 +7,9 @@ from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 from Functions import get_pasta, add_user_to_file, remove_user, read_users, update_list
 from Keyboards import *
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+scheduler = AsyncIOScheduler()
 
 dotenv.load_dotenv()
 
@@ -24,25 +27,16 @@ goal_time = datetime.datetime.strptime('09:00', '%H:%M')
 
 
 async def send_mailing():
-    global mailing_enabled
     if not mailing_enabled:
         return
-    if datetime.datetime.now().hour == goal_time.hour and datetime.datetime.now().minute == goal_time.minute:
-        mailing_enabled = False
-        update_list()
-        for user in subscribed_users:
-            await bot.send_message(int(user),
-                                   text=f"`{get_pasta()}`",
-                                   parse_mode="Markdown",
-                                   reply_markup=unsubscribe_keyboard.as_markup())
-        print(f"{datetime.datetime.now()}\n"
-              f"Отправил рассылку {len(subscribed_users)} пользователям, теперь жду 24 часа")
-        await asleep(60)
-        mailing_enabled = True
-        await send_mailing()
-    else:
-        print("Запустил ожидание")
-        await asleep((goal_time - datetime.datetime.now()).seconds + 1)
+    for user in subscribed_users:
+        await bot.send_message(int(user),
+                               text=f"`{get_pasta()}`",
+                               parse_mode="Markdown",
+                               reply_markup=unsubscribe_keyboard.as_markup(),
+                               )
+    print(f"{datetime.datetime.now()}\n"
+          f"Отправил рассылку {len(subscribed_users)} пользователям, теперь жду 24 часа")
 
 
 @dp.message(Command(commands=['start_mailing']))
@@ -56,7 +50,6 @@ async def start_mailing(message: Message):
         return
     mailing_enabled = True
     await message.answer(text=f"Включил рассылку на {goal_time.time()}")
-    await send_mailing()
 
 
 @dp.message(Command(commands=['stop_mailing']))
@@ -108,8 +101,14 @@ async def More(callback: CallbackQuery):
                                   reply_markup=keyboard.as_markup())
 
 
+def on_startup():
+    scheduler.add_job(update_list, "cron", hour="*", jitter=120)
+    scheduler.add_job(send_mailing, "cron", hour="*/5", jitter=120)
+    scheduler.start()
+
+
 async def main():
-    await dp.start_polling(bot, skip_updates=True)
+    await dp.start_polling(bot, skip_updates=True, on_startup=on_startup())
 
 
 # Запускаем бота
