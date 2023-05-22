@@ -71,3 +71,20 @@ def remove_user(user: str | int):
         users.remove(str(user))
         with open(path, "w") as file:
             [file.write(user.rstrip() + ";") for user in users]
+
+
+def main():
+    url = r"https://copypastas.ru/"
+    available_pastas = read_pastas_file()
+    if not available_pastas:
+        update_list()
+        return get_pasta()
+    else:
+        
+        pasta = requests.get(f"{url}copypasta/{random.choice(available_pastas)}")
+        with open("test.html", "bw") as file:
+            file.write(pasta.content)
+
+
+if __name__ == "__main__":
+    main()

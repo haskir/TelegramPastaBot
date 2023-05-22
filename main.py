@@ -1,13 +1,12 @@
-import asyncio, dotenv, os, time
-from asyncio import sleep as asleep
-import datetime
+import asyncio, dotenv
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
-from Functions import get_pasta, add_user_to_file, remove_user, read_users, update_list
+from Functions import *
 from Keyboards import *
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from aiogram.exceptions import TelegramForbiddenError
 
 scheduler = AsyncIOScheduler()
 
@@ -30,11 +29,13 @@ async def send_mailing():
     if not mailing_enabled:
         return
     for user in subscribed_users:
-        await bot.send_message(int(user),
-                               text=f"`{get_pasta()}`",
-                               parse_mode="Markdown",
-                               reply_markup=unsubscribe_keyboard.as_markup(),
-                               )
+        try:
+            await bot.send_message(int(user),
+                                   text=f"`{get_pasta()}`",
+                                   parse_mode="Markdown",
+                                   reply_markup=unsubscribe_keyboard.as_markup())
+        except TelegramForbiddenError:
+            remove_user(user)
     print(f"{datetime.datetime.now()}\n"
           f"Отправил рассылку {len(subscribed_users)} пользователям, теперь жду 24 часа")
 
@@ -103,7 +104,7 @@ async def More(callback: CallbackQuery):
 
 def on_startup():
     scheduler.add_job(update_list, "cron", hour="*", jitter=120)
-    scheduler.add_job(send_mailing, "cron", hour="*/5", jitter=120)
+    scheduler.add_job(send_mailing, "cron", hour=9, jitter=120)
     scheduler.start()
 
 
