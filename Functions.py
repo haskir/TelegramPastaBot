@@ -40,6 +40,7 @@ def get_pasta() -> str | bool:
         pasta = requests.get(f"{url}copypasta/{random.choice(available_pastas)}")
         soup = BeautifulSoup(pasta.content, "html.parser")
         result = soup.find("div", class_="afzSy")
+        [img.replace_with(img["alt"]) for img in result.find_all("img")]
         return result.get_text().strip()
 
 
@@ -74,16 +75,7 @@ def remove_user(user: str | int):
 
 
 def main():
-    url = r"https://copypastas.ru/"
-    available_pastas = read_pastas_file()
-    if not available_pastas:
-        update_list()
-        return get_pasta()
-    else:
-        
-        pasta = requests.get(f"{url}copypasta/{random.choice(available_pastas)}")
-        with open("test.html", "bw") as file:
-            file.write(pasta.content)
+    print(get_pasta())
 
 
 if __name__ == "__main__":
