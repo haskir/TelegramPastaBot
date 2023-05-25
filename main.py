@@ -11,7 +11,7 @@ from aiogram.exceptions import TelegramForbiddenError
 scheduler = AsyncIOScheduler()
 
 dotenv.load_dotenv()
-
+a = "5"
 API_TOKEN: str = os.getenv('BOT_TOKEN')
 ADMIN_ID: int = int(os.getenv('ADMIN_ID'))
 
