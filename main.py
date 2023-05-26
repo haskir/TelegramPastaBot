@@ -12,7 +12,7 @@ scheduler = AsyncIOScheduler()
 
 dotenv.load_dotenv()
 a = "5"
-API_TOKEN: str = os.getenv('BOT_TOKEN')
+API_TOKEN: str = os.getenv('TGbotWallet_token')
 ADMIN_ID: int = int(os.getenv('ADMIN_ID'))
 
 # Создаем объекты бота и диспетчера

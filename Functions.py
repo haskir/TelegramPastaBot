@@ -57,10 +57,10 @@ def add_user_to_file(user: str | int):
             file.write(f"{user.rstrip()};")
 
 
-def read_users() -> list[str] | None:
+def read_users() -> list[str]:
     path = r"./users.txt"
     if not os.path.exists(path):
-        return None
+        return list()
     with open(path, "r") as file:
         return [user for user in file.readline().split(";") if user and user.isdigit()]
 
