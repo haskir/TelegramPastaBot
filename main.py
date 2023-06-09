@@ -21,7 +21,7 @@ storage: MemoryStorage = MemoryStorage()
 dp: Dispatcher = Dispatcher(bot=bot, storage=storage)
 subscribed_users = set()
 [subscribed_users.add(user) for user in read_users()]
-mailing_enabled = False
+mailing_enabled = True
 goal_time = datetime.datetime.strptime('09:00', '%H:%M')
 
 
