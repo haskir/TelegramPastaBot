@@ -1,21 +1,26 @@
 import datetime
 import os.path
 import random
-
+import xml.etree.ElementTree as ET
 import requests
 from bs4 import BeautifulSoup
 
 
 def update_list() -> bool:
-    url = r"https://copypastas.ru/"
-    req = requests.get(url + "ids.php")
-    if req.status_code == 200:
+    url = "https://copypastas.ru/sitemap.xml"
+    res = requests.get(url)
+    if res.status_code == 200:
+        # Parse XML content from the response text
+        root = ET.fromstring(res.text)
         with open(r"./pastas.txt", "w") as file:
-            file.write(req.text)
-            print(f"Обновил список паст {datetime.datetime.now()}")
-            return True
-    print("Didn't get list of pastas")
-    return False
+            for url in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}url')[:-2:]:
+                loc = url.find('{http://www.sitemaps.org/schemas/sitemap/0.9}loc').text
+                file.write(loc.split("/")[-2] + " ")
+        print(f"Обновил список паст {datetime.datetime.now()}")
+        return True  # Assuming success
+    else:
+        print("Didn't get list of pastas")
+        return False
 
 
 def read_pastas_file() -> None | list:
@@ -79,4 +84,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    update_list()
+    # main()
