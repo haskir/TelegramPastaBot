@@ -44,7 +44,7 @@ def get_pasta() -> str | bool:
     else:
         pasta = requests.get(f"{url}copypasta/{random.choice(available_pastas)}")
         soup = BeautifulSoup(pasta.content, "html.parser")
-        result = soup.find("div", class_="afzSy")
+        result = soup.find("div", {"class": "kGPjb"})
         [img.replace_with(img["alt"]) for img in result.find_all("img")]
         return result.get_text().strip()
 
@@ -84,5 +84,4 @@ def main():
 
 
 if __name__ == "__main__":
-    update_list()
-    # main()
+    main()
