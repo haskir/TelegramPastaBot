@@ -3,7 +3,7 @@ import os.path
 import random
 import bs4
 import requests
-from lxml.etree import ElementTree as ET
+import xml.etree.ElementTree as ET
 
 
 def update_list() -> bool:
@@ -93,4 +93,5 @@ def main():
 
 
 if __name__ == "__main__":
+    update_list()
     main()
