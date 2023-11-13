@@ -1,9 +1,11 @@
 import datetime
 import os.path
 import random
-import xml.etree.ElementTree as ET
+
+import bs4
 import requests
-from bs4 import BeautifulSoup
+from lxml import etree
+from lxml.etree import ElementTree as ET
 
 
 def update_list() -> bool:
@@ -31,7 +33,7 @@ def read_pastas_file() -> None | list:
             print("Error in read_pastas_file")
             return None
         print("Got new file")
-    with open(path, "r") as file:
+    with open(path) as file:
         return file.readline().split(" ")
 
 
@@ -42,11 +44,20 @@ def get_pasta() -> str | bool:
         update_list()
         return get_pasta()
     else:
-        pasta = requests.get(f"{url}copypasta/{random.choice(available_pastas)}")
-        soup = BeautifulSoup(pasta.content, "html.parser")
-        result = soup.find("div", {"class": "kGPjb"})
-        [img.replace_with(img["alt"]) for img in result.find_all("img")]
-        return result.get_text().strip()
+        try:
+            response = requests.get(f"{url}copypasta/{random.choice(available_pastas)}")
+            if response.status_code != 200:
+                return "Не смогу получить пасту :("
+
+            soup = bs4.BeautifulSoup(response.text, "html.parser")
+
+            PastaElement = soup.find("h2", string="Текст копипасты")
+            buttons_start_index = PastaElement.next_element.next_element.get_text().index("content_copy")
+            return PastaElement.next_element.next_element.get_text()[0:buttons_start_index]
+
+        except BaseException as e:
+            print(e)
+            return "Не смог запарсить пасту :("
 
 
 def add_user_to_file(user: str | int):
@@ -66,7 +77,7 @@ def read_users() -> list[str]:
     path = r"./users.txt"
     if not os.path.exists(path):
         return list()
-    with open(path, "r") as file:
+    with open(path) as file:
         return [user for user in file.readline().split(";") if user and user.isdigit()]
 
 
