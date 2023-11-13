@@ -1,10 +1,8 @@
 import datetime
 import os.path
 import random
-
 import bs4
 import requests
-from lxml import etree
 from lxml.etree import ElementTree as ET
 
 
