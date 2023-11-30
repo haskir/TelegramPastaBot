@@ -1,17 +1,19 @@
-import asyncio, dotenv
+import asyncio
+import dotenv
+
 from aiogram import Bot, Dispatcher
-from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.exceptions import TelegramForbiddenError
 from aiogram.filters import Command
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import CallbackQuery, Message
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 from Functions import *
 from Keyboards import *
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from aiogram.exceptions import TelegramForbiddenError
 
 scheduler = AsyncIOScheduler()
 
 dotenv.load_dotenv()
-a = "5"
 API_TOKEN: str = os.getenv('TelegramPastaBot_token')
 ADMIN_ID: int = int(os.getenv('ADMIN_ID'))
 
@@ -84,7 +86,7 @@ async def Subscribe(callback: CallbackQuery):
 
 
 @dp.callback_query(lambda callback: "Unsubscribe" in callback.data)
-async def Unbscribe(callback: CallbackQuery):
+async def Unsubscribe(callback: CallbackQuery):
     user = str(callback.from_user.id)
     if user not in subscribed_users:
         return
@@ -97,9 +99,11 @@ async def Unbscribe(callback: CallbackQuery):
 @dp.callback_query(lambda callback: "More" in callback.data)
 async def More(callback: CallbackQuery):
     keyboard = subscribe_keyboard if str(callback.from_user.id) not in subscribed_users else unsubscribe_keyboard
-    await callback.message.answer(text=f"`{get_pasta()}`",
-                                  parse_mode="Markdown",
-                                  reply_markup=keyboard.as_markup())
+    await callback.message.answer(
+        text=f'```{get_pasta()}```',
+        parse_mode="MarkdownV2",
+        reply_markup=keyboard.as_markup()
+    )
 
 
 def on_startup():
