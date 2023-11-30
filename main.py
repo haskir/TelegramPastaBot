@@ -33,7 +33,7 @@ async def send_mailing():
     for user in subscribed_users:
         try:
             await bot.send_message(int(user),
-                                   text=f"`{get_pasta()}`",
+                                   text=f"```{get_pasta()}```",
                                    parse_mode="Markdown",
                                    reply_markup=unsubscribe_keyboard.as_markup())
         except TelegramForbiddenError:
