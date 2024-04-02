@@ -1,6 +1,6 @@
 import asyncio
-import dotenv
 
+import dotenv
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramForbiddenError
 from aiogram.filters import Command
@@ -33,9 +33,9 @@ async def send_mailing():
     for user in subscribed_users:
         try:
             await bot.send_message(int(user),
-                                   text=f"```База\n{get_pasta()}```",
-                                   parse_mode="MarkdownV2",
-                                   reply_markup=unsubscribe_keyboard.as_markup())
+                                 text=f"```База\n{get_pasta()}\n```",
+                                 parse_mode="MarkdownV2",
+                                 reply_markup=unsubscribe_keyboard.as_markup())
         except TelegramForbiddenError:
             remove_user(user)
     print(f"{datetime.datetime.now()}\n"
