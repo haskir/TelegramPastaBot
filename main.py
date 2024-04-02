@@ -100,7 +100,7 @@ async def Unsubscribe(callback: CallbackQuery):
 async def More(callback: CallbackQuery):
     keyboard = subscribe_keyboard if str(callback.from_user.id) not in subscribed_users else unsubscribe_keyboard
     await callback.message.answer(
-        text=f'```База\n{get_pasta()}```',
+        text=f'```База\n{get_pasta()}\n```',
         parse_mode="MarkdownV2",
         reply_markup=keyboard.as_markup()
     )
