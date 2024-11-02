@@ -105,7 +105,12 @@ async def Unsubscribe(callback: CallbackQuery):
 
 @dp.callback_query(lambda callback: "More" in callback.data)
 async def More(callback: CallbackQuery):
-    await send(callback.from_user.id)
+    keyboard = subscribe_keyboard if str(callback.from_user.id) not in subscribed_users else unsubscribe_keyboard
+    await callback.message.answer(
+        text=pasta_to_markdown(await get_pasta()),
+        parse_mode="MarkdownV2",
+        reply_markup=keyboard.as_markup()
+    )
 
 
 def on_startup():
