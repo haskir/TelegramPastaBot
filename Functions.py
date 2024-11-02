@@ -1,6 +1,5 @@
 import os.path
 import random
-from pprint import pprint
 
 import aiofiles
 import bs4
@@ -85,21 +84,27 @@ def add_user_to_file(user: str | int):
             file.write(f"{user.rstrip()};")
 
 
-def read_users() -> list[str]:
+def read_users() -> list[int]:
     path = r"./users.txt"
     if not os.path.exists(path):
         return list()
     with open(path) as file:
-        return [user for user in file.readline().split(";") if user and user.isdigit()]
+        return [int(user) for user in file.readline().split(";") if user and user.isdigit()]
 
 
 def remove_user(user: str | int):
     path = r"./users.txt"
     users = read_users()
-    if str(user) in users:
-        users.remove(str(user))
+    if user in users:
+        users.remove(user)
         with open(path, "w") as file:
-            [file.write(user.rstrip() + ";") for user in users]
+            file.write(";".join(str(user) for user in users))
+
+
+def pasta_to_markdown(pasta: str) -> str:
+    if len(pasta) < 42:
+        return f'`{pasta}`'
+    return f'```База\n{pasta}\n```'
 
 
 class PastaCache:

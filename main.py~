@@ -28,20 +28,19 @@ mailing_enabled = True
 goal_time = datetime.strptime('09:00', '%H:%M')
 
 
-async def send(user: int):
-    keyboard = subscribe_keyboard if user not in subscribed_users else unsubscribe_keyboard
+async def send(user: int | str):
     await bot.send_message(
-        user,
+        int(user),
         text=pasta_to_markdown(await get_pasta()),
         parse_mode="MarkdownV2",
-        reply_markup=keyboard.as_markup()
+        reply_markup=unsubscribe_keyboard.as_markup()
     )
 
 
 async def send_mailing():
     if not mailing_enabled:
         return
-    tasks = {user: asyncio.create_task(send(user)) for user in subscribed_users}
+    tasks = {int(user): asyncio.create_task(send(user)) for user in subscribed_users}
     for user, task in tasks.items():
         try:
             await task
@@ -83,7 +82,7 @@ async def Any(message: Message):
 
 @dp.callback_query(lambda callback: "Subscribe" in callback.data)
 async def Subscribe(callback: CallbackQuery):
-    user = callback.from_user.id
+    user = str(callback.from_user.id)
     if user in subscribed_users:
         return
     await callback.message.answer(text="Буду слать пасту каждый день в 9:00",
@@ -94,7 +93,7 @@ async def Subscribe(callback: CallbackQuery):
 
 @dp.callback_query(lambda callback: "Unsubscribe" in callback.data)
 async def Unsubscribe(callback: CallbackQuery):
-    user = callback.from_user.id
+    user = str(callback.from_user.id)
     if user not in subscribed_users:
         return
     subscribed_users.remove(user)
