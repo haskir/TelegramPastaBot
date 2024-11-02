@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 
 import dotenv
 from aiogram import Bot, Dispatcher
@@ -24,7 +25,7 @@ dp: Dispatcher = Dispatcher(bot=bot, storage=storage)
 subscribed_users = set()
 [subscribed_users.add(user) for user in read_users()]
 mailing_enabled = True
-goal_time = datetime.datetime.strptime('09:00', '%H:%M')
+goal_time = datetime.strptime('09:00', '%H:%M')
 
 
 async def send_mailing():
@@ -32,13 +33,15 @@ async def send_mailing():
         return
     for user in subscribed_users:
         try:
-            await bot.send_message(int(user),
-                                 text=f"```База\n{get_pasta()}\n```",
-                                 parse_mode="MarkdownV2",
-                                 reply_markup=unsubscribe_keyboard.as_markup())
+            await bot.send_message(
+                int(user),
+                text=f"```База\n{await get_pasta()}\n```",
+                parse_mode="MarkdownV2",
+                reply_markup=unsubscribe_keyboard.as_markup()
+            )
         except TelegramForbiddenError:
             remove_user(user)
-    print(f"{datetime.datetime.now()}\n"
+    print(f"{datetime.now()}\n"
           f"Отправил рассылку {len(subscribed_users)} пользователям, теперь жду 24 часа")
 
 
@@ -100,7 +103,7 @@ async def Unsubscribe(callback: CallbackQuery):
 async def More(callback: CallbackQuery):
     keyboard = subscribe_keyboard if str(callback.from_user.id) not in subscribed_users else unsubscribe_keyboard
     await callback.message.answer(
-        text=f'```База\n{get_pasta()}\n```',
+        text=f'```База\n{await get_pasta()}\n```',
         parse_mode="MarkdownV2",
         reply_markup=keyboard.as_markup()
     )

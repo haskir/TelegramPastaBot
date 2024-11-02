@@ -1,26 +1,23 @@
-import datetime
 import os.path
 import random
 import bs4
-import requests
 import xml.etree.ElementTree as ET
+from httpx import AsyncClient
 
 
-def update_list() -> bool:
+async def update_list() -> bool:
     url = "https://copypastas.ru/sitemap.xml"
-    res = requests.get(url)
-    if res.status_code == 200:
-        # Parse XML content from the response text
-        root = ET.fromstring(res.text)
-        with open(r"./pastas.txt", "w") as file:
-            for url in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}url')[:-2:]:
-                loc = url.find('{http://www.sitemaps.org/schemas/sitemap/0.9}loc').text
-                file.write(loc.split("/")[-2] + " ")
-        print(f"Обновил список паст {datetime.datetime.now()}")
-        return True  # Assuming success
-    else:
-        print("Didn't get list of pastas")
-        return False
+    async with AsyncClient() as client:
+        res = await client.get(url)
+        if res.status_code == 200:
+            root = ET.fromstring(res.text)
+            with open(r"./pastas.txt", "w") as file:
+                for url in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}url')[:-2:]:
+                    loc = url.find('{http://www.sitemaps.org/schemas/sitemap/0.9}loc').text
+                    file.write(loc.split("/")[-2] + " ")
+            return True
+        else:
+            return False
 
 
 def read_pastas_file() -> None | list:
@@ -35,26 +32,23 @@ def read_pastas_file() -> None | list:
         return file.readline().split(" ")
 
 
-def get_pasta() -> str | bool:
+async def get_pasta() -> str | bool:
     url = r"https://copypastas.ru/"
     available_pastas = read_pastas_file()
     if not available_pastas:
-        update_list()
-        return get_pasta()
+        await update_list()
+        return await get_pasta()
     else:
         try:
-            response = requests.get(f"{url}copypasta/{random.choice(available_pastas)}")
-            if response.status_code != 200:
-                return "Не смогу получить пасту :("
-
-            soup = bs4.BeautifulSoup(response.text, "html.parser")
-
-            PastaElement = soup.find("h2", string="Текст копипасты")
-            buttons_start_index = PastaElement.next_element.next_element.get_text().index("content_copy")
-            return PastaElement.next_element.next_element.get_text()[0:buttons_start_index]
-
+            async with AsyncClient() as client:
+                response = await client.get(f"{url}copypasta/{random.choice(available_pastas)}")
+                if response.status_code != 200:
+                    return "Не смогу получить пасту :("
+                soup = bs4.BeautifulSoup(response.text, "html.parser")
+                PastaElement = soup.find("h2", string="Текст копипасты")
+                buttons_start_index = PastaElement.next_element.next_element.get_text().index("content_copy")
+                return PastaElement.next_element.next_element.get_text()[0:buttons_start_index]
         except BaseException as e:
-            print(e)
             return "Не смог запарсить пасту :("
 
 
@@ -86,12 +80,3 @@ def remove_user(user: str | int):
         users.remove(str(user))
         with open(path, "w") as file:
             [file.write(user.rstrip() + ";") for user in users]
-
-
-def main():
-    print(get_pasta())
-
-
-if __name__ == "__main__":
-    update_list()
-    main()
