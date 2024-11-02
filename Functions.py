@@ -71,28 +71,24 @@ async def get_pasta() -> str | bool:
     return parsed
 
 
-def add_user_to_file(user: str | int):
+def add_user_to_file(user: int):
     path = r"./users.txt"
-    if not os.path.exists(path):
-        with open(path, "w") as file:
-            file.write(f"{user};")
-    else:
-        if user in read_users():
-            print("User already in Database")
-            return
-        with open(path, "a") as file:
-            file.write(f"{user.rstrip()};")
+    with open(path, "a") as file:
+        file.write(f'{user} ')
 
 
-def read_users() -> list[int]:
+def read_users() -> set[int]:
     path = r"./users.txt"
     if not os.path.exists(path):
-        return list()
+        return set()
     with open(path) as file:
-        return [int(user) for user in file.readline().split(";") if user and user.isdigit()]
+        return {
+            int(user) for user in file.readline().split()
+            if user and user.isdigit()
+        }
 
 
-def remove_user(user: str | int):
+def remove_user(user: int):
     path = r"./users.txt"
     users = read_users()
     if user in users:
