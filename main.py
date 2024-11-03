@@ -30,11 +30,13 @@ goal_time = datetime.strptime('09:00', '%H:%M')
 
 async def send(user: int):
     keyboard = unsubscribe_keyboard if user in subscribed_users else subscribe_keyboard
-    await bot.send_message(
-        user,
-        text=pasta_to_markdown(await get_pasta()),
-        parse_mode="MarkdownV2",
-        reply_markup=keyboard.as_markup()
+    asyncio.create_task(
+        bot.send_message(
+            user,
+            text=pasta_to_markdown(await get_pasta()),
+            parse_mode="MarkdownV2",
+            reply_markup=keyboard.as_markup()
+        )
     )
 
 
