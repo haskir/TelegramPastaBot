@@ -111,7 +111,7 @@ async def More(callback: CallbackQuery):
 
 
 def on_startup():
-    scheduler.add_job(update_list, "cron", hour="*", jitter=120)
+    scheduler.add_job(pastas_list.update_list_of_pastas, "cron", hour="*", jitter=120)
     scheduler.add_job(send_mailing, "cron", hour=9, jitter=120)
     scheduler.start()
 
