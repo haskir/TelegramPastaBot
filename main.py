@@ -1,9 +1,9 @@
-import asyncio
-from datetime import datetime
+from contextlib import suppress
+from datetime import datetime, UTC
 
 import dotenv
 from aiogram import Bot, Dispatcher
-from aiogram.exceptions import TelegramForbiddenError
+from aiogram.exceptions import TelegramForbiddenError, TelegramAPIError
 from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import CallbackQuery, Message
@@ -15,7 +15,7 @@ from Keyboards import *
 scheduler = AsyncIOScheduler()
 
 dotenv.load_dotenv()
-API_TOKEN: str = os.getenv('TelegramPastaBot_token')
+API_TOKEN: str = os.getenv('BOT_TOKEN')
 ADMIN_ID: int = int(os.getenv('ADMIN_ID'))
 
 # Создаем объекты бота и диспетчера
@@ -78,35 +78,43 @@ async def stop_mailing(message: Message):
 
 
 @dp.message()
-async def Any(message: Message):
-    await message.answer(text="Привет, я паста-бот, все пасты я беру с сайта\nhttps://copypastas.ru/\n",
-                         reply_markup=subscribe_keyboard.as_markup())
+async def any_message_handler(message: Message):
+    await message.answer(
+        text="Привет, я паста-бот, все пасты я беру с сайта\nhttps://copypastas.ru/\n",
+        reply_markup=subscribe_keyboard.as_markup(),
+    )
 
 
 @dp.callback_query(lambda callback: "Subscribe" in callback.data)
-async def Subscribe(callback: CallbackQuery):
+async def subscribe(callback: CallbackQuery):
+    with suppress(TelegramAPIError):
+        await callback.answer()
     user = callback.from_user.id
     if user in subscribed_users:
         return
-    await callback.message.answer(text="Буду слать пасту каждый день в 9:00",
-                                  reply_markup=unsubscribe_keyboard.as_markup())
+    await callback.message.answer(
+        text="Буду слать пасту каждый день в 9:00",
+        reply_markup=unsubscribe_keyboard.as_markup(),
+    )
     subscribed_users.add(user)
     add_user_to_file(user)
 
 
 @dp.callback_query(lambda callback: "Unsubscribe" in callback.data)
-async def Unsubscribe(callback: CallbackQuery):
+async def unsubscribe(callback: CallbackQuery):
     user = callback.from_user.id
     if user not in subscribed_users:
         return
     subscribed_users.remove(user)
-    await callback.message.answer(text="Больше не буду слать пасту каждый день",
-                                  reply_markup=subscribe_keyboard.as_markup())
+    await callback.message.answer(
+        text="Больше не буду слать пасту каждый день",
+        reply_markup=subscribe_keyboard.as_markup(),
+    )
     remove_user(user)
 
 
 @dp.callback_query(lambda callback: "More" in callback.data)
-async def More(callback: CallbackQuery):
+async def more(callback: CallbackQuery):
     await send(callback.from_user.id)
 
 
@@ -114,6 +122,7 @@ def on_startup():
     scheduler.add_job(pastas_list.update_list_of_pastas, "cron", hour="*", jitter=120)
     scheduler.add_job(send_mailing, "cron", hour=9, jitter=120)
     scheduler.start()
+    print(f"Бот запущен: {datetime.now(UTC)}")
 
 
 async def main():
