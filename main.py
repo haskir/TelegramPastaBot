@@ -115,6 +115,8 @@ async def unsubscribe(callback: CallbackQuery):
 
 @dp.callback_query(lambda callback: "More" in callback.data)
 async def more(callback: CallbackQuery):
+    with suppress(TelegramAPIError):
+        await callback.answer()
     await send(callback.from_user.id)
 
 
