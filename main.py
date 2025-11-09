@@ -32,7 +32,7 @@ def configure_dispatcher() -> Dispatcher:
 
 def init_scheduler(di_provider: DIProvider, scheduler: AsyncIOScheduler) -> None:
     scheduler.start()
-    scheduler.add_job(di_provider.sender.send_to_users, CronTrigger(hour="6"), tzinfo=UTC)
+    scheduler.add_job(di_provider.sender.send_to_users, CronTrigger(hour=15, minute=46, timezone=UTC) )
     scheduler.add_job(di_provider.pasta_list.update_list_of_pastas, CronTrigger(hour="*"), jitter=120)
 
 

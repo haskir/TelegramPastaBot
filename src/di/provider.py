@@ -1,3 +1,5 @@
+import asyncio
+
 from aiogram import Bot, Dispatcher
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from dishka import Provider, Scope, make_async_container, provide
@@ -36,11 +38,12 @@ class DIProvider(Provider):
 
 async def initialize_services(bot: Bot, scheduler: AsyncIOScheduler) -> tuple[PastaCache, PastaList, ScheduleSender]:
     pasta_cache: PastaCache = PastaCache()
-    await pasta_cache.initialize()
     pasta_list: PastaList = PastaList(pasta_cache)
-    await pasta_list.initialize_list()
     sender: ScheduleSender = ScheduleSender(bot, scheduler, pasta_list)
-    return pasta_cache, pasta_list, sender
+
+    result: tuple[PastaCache, PastaList, ScheduleSender] = pasta_cache, pasta_list, sender
+    await asyncio.gather(*[service.initialize() for service in result])
+    return result
 
 
 async def configure_dishka(

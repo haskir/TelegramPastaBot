@@ -33,7 +33,7 @@ class PastaList:
         self.path: str = path
         self.pastas: list[int] = list()
 
-    async def initialize_list(self):
+    async def initialize(self):
         if not os.path.exists(self.path):
             ids = await self.update_list_of_pastas()
             if ids:

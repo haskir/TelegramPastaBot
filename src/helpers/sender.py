@@ -4,6 +4,7 @@ from datetime import UTC, time
 
 import aiofiles
 from aiogram import Bot
+from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramForbiddenError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -34,6 +35,12 @@ class ScheduleSender:
 
         self._enabled: bool = True
 
+    async def initialize(self):
+        if not os.path.exists(self._filename):
+            self.users = set()
+        with open(self._filename) as file:
+            self.users = {int(user) for user in file.readline().split() if user and user.isdigit()}
+
     @property
     def enabled(self) -> bool:
         return self._enabled
@@ -47,7 +54,7 @@ class ScheduleSender:
             return
         for user_id in self.users:
             try:
-                await self.bot.send_message(chat_id=user_id, text="")
+                await self.send(user_id)
                 await asyncio.sleep(0.1)
             except TelegramForbiddenError:
                 await self.remove_user(user_id)
@@ -66,16 +73,10 @@ class ScheduleSender:
         async with aiofiles.open(self._filename, "a") as file:
             await file.write(f"{user_id} ")
 
-    def read_users(self) -> set[int]:
-        if not os.path.exists(self._filename):
-            return set()
-        with open(self._filename) as file:
-            return {int(user) for user in file.readline().split() if user and user.isdigit()}
-
-    async def send(self, user: int):
+    async def send(self, user_id: int):
         await self.bot.send_message(
-            chat_id=user,
+            chat_id=user_id,
             text=pasta_to_markdown(await self.pastas_list.get_pasta()),
-            parse_mode="MarkdownV2",
-            reply_markup=unsubscribe_keyboard if user in self.users else subscribe_keyboard,
+            parse_mode=ParseMode.MARKDOWN_V2,
+            reply_markup=unsubscribe_keyboard if user_id in self.users else subscribe_keyboard,
         )
