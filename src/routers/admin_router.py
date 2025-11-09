@@ -22,7 +22,7 @@ def configure_admin_router(admin_id: int) -> Router:
 
     @admin_router.message(Command(commands=["stop_mailing"]))
     async def stop_mailing(message: Message, sender: FromDishka[ScheduleSender]):
-        if sender.enabled:
+        if not sender.enabled:
             await message.answer(text="Рассылка неактивна")
         else:
             sender.enabled = False

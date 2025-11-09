@@ -1,4 +1,3 @@
-import asyncio
 import os
 import random
 from xml.etree import ElementTree
@@ -86,9 +85,9 @@ class PastaList:
             ids = list()
             for url in root.findall(cls.schema_path)[:-2:]:
                 loc = url.find("{http://www.sitemaps.org/schemas/sitemap/0.9}loc").text
-                ID = loc.split("/")[-2]
-                if ID and ID.isdigit():
-                    ids.append(int(ID))
+                _id = loc.split("/")[-2]
+                if _id and _id.isdigit():
+                    ids.append(int(_id))
             return ids
 
     def write_list_to_file(self, ids: list[int]) -> None:

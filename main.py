@@ -24,9 +24,8 @@ def on_shutdown():
 def configure_dispatcher() -> Dispatcher:
     storage: MemoryStorage = MemoryStorage()
     dispatcher: Dispatcher = Dispatcher(storage=storage)
-    ADMIN_ID: int = int(os.getenv("ADMIN_ID"))
     dispatcher.include_router(user_router)
-    dispatcher.include_router(configure_admin_router(ADMIN_ID))
+    dispatcher.include_router(configure_admin_router(int(os.getenv("ADMIN_ID"))))
     return dispatcher
 
 

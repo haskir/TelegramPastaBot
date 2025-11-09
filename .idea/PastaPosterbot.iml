@@ -5,6 +5,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/_venv" />
+      <excludeFolder url="file://$MODULE_DIR$/pastas" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.13 (TelegramPastaBot)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
