@@ -10,6 +10,7 @@ dependencies = [
     "apscheduler>=3.11.1",
     "bs4>=0.0.2",
     "dishka>=1.7.2",
+    "httpx>=0.28.1",
     "loguru>=0.7.3",
     "python-dotenv>=1.2.1",
     "ruff>=0.14.4",

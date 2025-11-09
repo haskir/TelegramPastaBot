@@ -7,13 +7,18 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from loguru import logger
 
 from src.di import DIProvider, configure_dishka
 from src.routers import configure_admin_router, user_router
 
 
 def on_startup():
-    print(f"Бот запущен: {datetime.now(UTC)}")
+    logger.info(f"Бот запущен: {datetime.now(UTC)}")
+
+
+def on_shutdown():
+    logger.info(f"Бот остановлен: {datetime.now(UTC)}")
 
 
 def configure_dispatcher() -> Dispatcher:
@@ -42,7 +47,15 @@ async def main():
     provider: DIProvider = await configure_dishka(bot, dispatcher, scheduler)
     init_scheduler(provider, scheduler)
 
-    await dispatcher.start_polling(bot, skip_updates=True, on_startup=on_startup())
+    try:
+        await dispatcher.start_polling(
+            bot,
+            skip_updates=True,
+            on_startup=on_startup(),
+        )
+    except (asyncio.CancelledError, KeyboardInterrupt):
+        await bot.session.close()
+        on_shutdown()
 
 
 if __name__ == "__main__":
