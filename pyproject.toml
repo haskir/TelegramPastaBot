@@ -1,7 +1,16 @@
 [project]
-name = "Twitch Pasta Bot"
+name = "TwitchPastaBot"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "aiofiles>=24.1.0",
+    "aiogram>=3.22.0",
+    "apscheduler>=3.11.1",
+    "bs4>=0.0.2",
+    "dishka>=1.7.2",
+    "loguru>=0.7.3",
+    "python-dotenv>=1.2.1",
+    "ruff>=0.14.4",
+]
