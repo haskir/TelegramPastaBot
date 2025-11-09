@@ -17,7 +17,7 @@ user_router = Router(name="User router")
 async def any_message_handler(message: Message):
     await message.answer(
         text="Привет, я паста-бот, все пасты я беру с сайта\nhttps://copypastas.ru/\n",
-        reply_markup=subscribe_keyboard.as_markup(),
+        reply_markup=subscribe_keyboard,
     )
 
 
@@ -26,7 +26,7 @@ async def subscribe(callback: CallbackQuery, sender: FromDishka[ScheduleSender])
     user: int = callback.from_user.id
     await callback.message.answer(
         text="Буду слать пасту каждый день в 9:00",
-        reply_markup=unsubscribe_keyboard.as_markup(),
+        reply_markup=unsubscribe_keyboard,
     )
     with suppress(TelegramAPIError):
         await callback.answer()
@@ -38,7 +38,7 @@ async def unsubscribe(callback: CallbackQuery, sender: FromDishka[ScheduleSender
     user: int = callback.from_user.id
     await callback.message.answer(
         text="Больше не буду слать пасту каждый день",
-        reply_markup=subscribe_keyboard.as_markup(),
+        reply_markup=subscribe_keyboard,
     )
     with suppress(TelegramAPIError):
         await callback.answer()
