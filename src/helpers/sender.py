@@ -38,8 +38,10 @@ class ScheduleSender:
     async def initialize(self):
         if not os.path.exists(self._filename):
             self.users = set()
-        with open(self._filename) as file:
-            self.users = {int(user) for user in file.readline().split() if user and user.isdigit()}
+            return
+        async with aiofiles.open(self._filename, encoding="utf-8") as file:
+            line: str = await file.readline()
+            self.users = {int(user) for user in line.split() if user and user.isdigit()}
 
     @property
     def enabled(self) -> bool:

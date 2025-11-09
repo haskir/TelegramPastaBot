@@ -26,9 +26,10 @@ async def stop_mailing(message: Message, sender: FromDishka[ScheduleSender]):
 
 def configure_admin_router(admin_id: int) -> Router:
     admin_router = Router(name="Admin router")
+    print(f"{admin_id = }")
     admin_router.message.filter(F.from_user.id == admin_id)
 
-    admin_router.message.register(start_mailing, Command(commands=["start_mailing"]))
-    admin_router.message.register(stop_mailing, Command(commands=["stop_mailing"]))
+    admin_router.message.register(start_mailing, Command("start_mailing"))
+    admin_router.message.register(stop_mailing, Command("stop_mailing"))
 
     return admin_router
